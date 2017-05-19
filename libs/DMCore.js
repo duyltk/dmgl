@@ -222,19 +222,25 @@
 
                 object.Texture = this.gl.createTexture();
                 object.Texture.image = new Image();
+                object.Texture.image.src = object.imageTexture;
                 _gl = this.gl;
                 object.Texture.image.onload = function () {
                     _gl.bindTexture(_gl.TEXTURE_2D, object.Texture);
-                    _gl.pixelStorei(_gl.UNPACK_FLIP_Y_WEBGL, true);
                     _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _gl.RGBA, _gl.UNSIGNED_BYTE, object.Texture.image);
+                    
                     _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
                     _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
-                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
-                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.LINEAR);
                     
+                    var width1 = object.Texture.image.width & (object.Texture.image.width - 1);
+                    var height1 = object.Texture.image.height & (object.Texture.image.height - 1);
+                    if (width1 == 0 && height1 == 0){
+                        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR_MIPMAP_NEAREST);
+                         _gl.generateMipmap(_gl.TEXTURE_2D);
+                    }else{
+                        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+                    }               
                     _gl.bindTexture(_gl.TEXTURE_2D, null);
                 };
-                object.Texture.image.src = object.imageTexture;
                 this.geometry.push(object);
                 object.indexInGeometry = this.geometry.length - 1;
             }

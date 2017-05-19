@@ -12,7 +12,7 @@
         }
     </style>
     <script src="glMatrix-0.9.5.min.js"></script>
-    <script src="DMCore.js"></script>
+    <script src="libs/DMCore.js"></script>
 
     <script type="text/javascript">
         var gl = [],
@@ -43,18 +43,18 @@
             Test.add(Camera);
             
             Plane = new DMCore.Plane();
-            Plane.addTexture('field.jpg');
+            Plane.addTexture('image/plane/field.jpg');
             Plane.scale(2.4, 1.2, 1.2);
             Test.add(Plane);
 
             Sphere = new DMCore.Sphere();
-            Sphere.addTexture('Football.png');
+            Sphere.addTexture('image/ball/Football.jpg');
             Sphere.scale(0.043, 0.043, 0.043);
             Sphere.translate(0, 0, 2);
             Test.add(Sphere);
 
             Space = new DMCore.Sphere();
-            Space.addTexture('Space.jpg');
+            Space.addTexture('image/bg/Space.jpg');
             Space.scale(4, 4, 4);
             Space.translate(0, 0, 0);
             Test.add(Space);
@@ -67,7 +67,7 @@
                 xCube[i] = Math.sin(theta) * 1;
                 yCube[i] = Math.cos(theta) * 1;
                 Cube[i] = new DMCore.Cube();
-                Cube[i].addTexture('cube.gif');
+                Cube[i].addTexture('image/cube/cube.gif');
                 Cube[i].translate(xCube[i], yCube[i], 0.07);
                 Cube[i].scale(0.06, 0.06, 0.06);
 
@@ -97,24 +97,25 @@
         function handleKeys() {
             if (currentlyPressedKeys[37]) {
                 // left key
-                
-                Sphere.translate(-0.2, 0, 0);
+                if(Sphere.getPositionX() > -2){
+                    Sphere.translate(-0.2, 0, 0);
+                }
             }
             if (currentlyPressedKeys[38]) {
                 // up key
-            
-                Sphere.translate(0, 0.2, 0);
+                if(Sphere.getPositionY() < 1)
+                    Sphere.translate(0, 0.2, 0);
             }
             if (currentlyPressedKeys[39]) {
                 // right key
-         
-                Sphere.translate(0.2, 0, 0);
+                if(Sphere.getPositionX() < 2)
+                    Sphere.translate(0.2, 0, 0);
 
             }
             if (currentlyPressedKeys[40]) {
                 // down key
-            
-                Sphere.translate(0, -0.2, 0);
+                if(Sphere.getPositionY() > -1)
+                    Sphere.translate(0, -0.2, 0);
 
             }
         }
@@ -138,7 +139,6 @@
             
             Test.renderWebGL();
             handleKeys();
-            //Sphere.rotate(Math.PI/180, 1, 1, 0);
             check();
             requestAnimationFrame(loop);
         }
