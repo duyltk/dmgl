@@ -154,7 +154,7 @@ function loop() {
     check();
     Test.renderWebGL();
     handleKeys();
-    
+    Camera.lookat(0, 0, 1, x, y, 0, 0, 1, 1);
     draw2D(ctx);
     requestAnimationFrame(loop);
 }
