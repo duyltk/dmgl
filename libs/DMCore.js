@@ -276,7 +276,7 @@
             this.gl.enableVertexAttribArray(this.Program.textureCoord);
             this.gl.uniform3fv(this.Program.lightPosition, [0, 0, 2]);
             this.gl.uniform3fv(this.Program.lightColor, [0.2, 0.2, 0.2]);
-            this.gl.uniform3fv(this.Program.ambientColor, [0.6, 0.6, 0.6]);
+            this.gl.uniform3fv(this.Program.ambientColor, [0.8, 0.8, 0.8]);
             for (var i = 0; i < this.geometry.length; i++) {
                 if (this.geometry[i] === undefined) {
                     continue;

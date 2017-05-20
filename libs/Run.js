@@ -30,7 +30,7 @@ function webGLStart() {
     Hud.width = window.innerWidth;    
     
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
-    Camera.translate(0.0, 1.0, -3);
+    Camera.translate(0.0, 1.0, -4);
     Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
     Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
     Test.add(Camera);
@@ -56,7 +56,7 @@ function webGLStart() {
 
     var latitudeBands = 6;
     var i = 0;
-    for (var latNumber = 0; latNumber <= latitudeBands * 2; latNumber++) {
+    for (var latNumber = 0; latNumber < latitudeBands * 2; latNumber++) {
         var theta = latNumber * Math.PI / latitudeBands;
         xCube[i] = Math.sin(theta) * 1;
         yCube[i] = Math.cos(theta) * 1;
@@ -125,13 +125,11 @@ function check() {
         Cube[i].rotate(Math.PI / 320, 0, 0, 1);
         if (x >= xCube[i] - 0.14 && x <= xCube[i] + 0.14 && y >= yCube[i] - 0.14 && y <= yCube[i] + 0.14) {
             
-            delete Test.geometry[Cube[i].indexInGeometry];
-            score += 10;
-            xCube.splice(i, 1);
-            yCube.splice(i, 1);
-            Cube.splice(i, 1);
+            if(Test.geometry[Cube[i].indexInGeometry] != undefined){
+                delete Test.geometry[Cube[i].indexInGeometry];
+                score += 10;
+            }
         }
-        
     }
 
 }
