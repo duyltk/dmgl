@@ -51,7 +51,12 @@
     }
     $('step-2').onclick = function () {
         $('step-2').style.display = 'none';
+        $('score').style.display = 'block';
         webGLStart();
+        return;
+    }
+    $('goHome').onclick = function () {
+        location.reload(true);
         return;
     }
 

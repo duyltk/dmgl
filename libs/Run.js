@@ -1,3 +1,7 @@
+$ = function (id) {
+    return document.getElementById(id);
+};
+
 var gl = [],
     Test,
     Plane,
@@ -11,8 +15,7 @@ var imgPathTex = [];
 var defineSPHERE = 0,
     defineCUBE = 1,
     definePLANE = 2;
-var Hud;
-var ctx;
+
 var score = 0;
 
 var pMatrix = mat4.create();
@@ -23,17 +26,11 @@ var xCube = [];
 var yCube = [];
 
 var Cube = [];
-var Cube2 = [];
 
 function webGLStart() {
     Test = new DMCore.Scene('mycanvas');
     Test.addProgramShader();
-    
-    Hud = document.getElementById('hud');
-    ctx = Hud.getContext('2d');
-    Hud.height = window.innerHeight;
-    Hud.width = window.innerWidth;    
-    
+
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
     Camera.translate(0.0, 1.0, -4);
     Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
@@ -129,27 +126,22 @@ function check() {
     for (var i = 0; i < Cube.length; i++) {
         Cube[i].rotate(Math.PI / 320, 0, 0, 1);
         if (x >= xCube[i] - 0.14 && x <= xCube[i] + 0.14 && y >= yCube[i] - 0.14 && y <= yCube[i] + 0.14) {
-            
-            if(Test.geometry[Cube[i].indexInGeometry] != undefined){
+            if (Test.geometry[Cube[i].indexInGeometry] != undefined) {
                 delete Test.geometry[Cube[i].indexInGeometry];
                 score += 10;
+                $('score').innerHTML = 'Your score: ' + score;
+                if(score == latitudeBands * 20){
+                    $('win').style.display = 'block';
+                    $('goHome').style.display = 'block';
+                }
             }
+            
         }
+        
     }
 
 }
-function draw2D(ctx) {
-    ctx.clearRect(0, 0, 400, 400);
-    ctx.font = ' 500 40px SFUIDisplay-Regular';
-    ctx.fillStyle = '#fff';
-    ctx.fillText("Your Score: ", 40, 75);
-    ctx.fillText(score, 250, 75);
-    if (score == Cube.length * 10) {
-        ctx.font = ' 60px SFUIDisplay-Regular';
-        ctx.fillText("YOU WIN", window.innerWidth / 2 - 110, window.innerHeight / 4);
-    }
 
-}
 function loop() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -157,7 +149,6 @@ function loop() {
     check();
     Test.renderWebGL();
     handleKeys();
-    
-    draw2D(ctx);
+
     requestAnimationFrame(loop);
 }

@@ -174,6 +174,7 @@ body {
     user-select: none;
 }
 
+
 #menu div {
     cursor: pointer;
     -moz-text-shadow: 0 0 10px rgb(255, 255, 255);
@@ -284,4 +285,72 @@ h4 {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+#score {
+    position: absolute;
+    top: auto;
+    right: 0;
+    bottom: 5%;
+    left: 0;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    max-width: 600px;
+    margin: auto;
+    text-align: center;
+    font-size: 4.3em;
+    font-family: SFUIDisplay-Regular;
+    font-family: 'BebasNeueRegular', arial, sans-serif;
+    text-transform: uppercase;
+    color: #fff;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    -webkit-transform-origin-y: 50%;
+    -webkit-transition: -webkit-transform 0.2s;
+    -webkit-transform: translateZ(0px) scaleY(0.8);
+    transform-origin-y: 50%;
+    transition: transform 0.2s ease;
+    transform: translateZ(0px) scaleY(0.8);
+    background: -moz-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 40%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 100%);
+    /* FF3.6+ */
+    background: -webkit-gradient(linear, left top, right top, color-stop(0%, rgba(255, 255, 255, 0)), color-stop(40%, rgba(255, 255, 255, 0.5)), color-stop(60%, rgba(255, 255, 255, 0.5)), color-stop(100%, rgba(255, 255, 255, 0)));
+    /* Chrome,Safari4+ */
+    background: -webkit-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 40%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 100%);
+    /* Chrome10+,Safari5.1+ */
+    background: -o-linear-gradient(left, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 40%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0) 100%);
+    /* W3C */
+}
+
+#win, #goHome {
+   position: absolute;
+    top: auto;
+    right: 0;
+    bottom: 50%;
+    left: 0;
+    z-index: 2;
+    display: block;
+    width: 100%;
+    max-width: 1366px;
+    margin: auto;
+    text-align: center;
+    font-size: 4.3em;
+    font-family: SFUIDisplay-Regular;
+    text-transform: uppercase;
+    color: #43434a;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: pointer;
+    background-color: white;
+}
+#goHome{
+    color: #f64239;
+    bottom: 38%;
 }

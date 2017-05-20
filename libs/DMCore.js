@@ -17,7 +17,7 @@
             this.gl.viewportHeight = canvas.height;
         } catch (e) {}
         if (!this.gl) {
-            alert("your Browser does not support webgl")
+            alert("Your Browser does not support webgl");
         }
         this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
         this.pMatrix = mat4.create();
