@@ -54,7 +54,7 @@ function webGLStart() {
     Test.add(Space);
 
 
-    var latitudeBands = 6;
+    latitudeBands = 6;
     var i = 0;
     for (var latNumber = 0; latNumber < latitudeBands * 2; latNumber++) {
         var theta = latNumber * Math.PI / latitudeBands;
@@ -140,7 +140,7 @@ function draw2D(ctx){
             ctx.fillStyle = 'rgba(180, 100, 223, 1)';
             ctx.fillText("Your Score: ", 40, 50);
             ctx.fillText(score, 150, 50);
-            if (Cube.length == 0){
+            if (score ==  Cube.length * 10){
                 ctx.font = ' 50px Courier New';
                 ctx.fillText("YOU WIN", window.innerWidth/2 - 110, window.innerHeight/2);
             }
