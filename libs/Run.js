@@ -34,8 +34,8 @@ function webGLStart() {
     Sphere = new DMCore.Sphere();
     Sphere.addTexture('image/ball/Football.jpg');
     Sphere.scale(0.043, 0.043, 0.043);
-
     Sphere.translate(0, 0, 2);
+    Sphere.castShadow(true);
     Test.add(Sphere);
 
     Space = new DMCore.Sphere();
@@ -55,6 +55,7 @@ function webGLStart() {
         Cube[i].addTexture('image/cube/cube.gif');
         Cube[i].translate(xCube[i], yCube[i], 0.1);
         Cube[i].scale(0.06, 0.06, 0.06);
+        Cube[i].castShadow(true);
         Test.add(Cube[i]);
         i++;
     }

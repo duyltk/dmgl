@@ -231,6 +231,9 @@
                 var temp = mat4.create();
                 mat4.set(this.geometry[i].mvMatrix, temp);
                 if (this.geometry[i].Type == 'Sphere') {
+                    if (this.geometry[i].Shadow == false) {
+                        continue;
+                    }
                     this.geometry[i].VertexBufferShadow = this.geometry[i].VertexBuffer;
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBufferShadow);
                     this.gl.vertexAttribPointer(this.ShadowProgram.Position, this.geometry[i].VertexBufferShadow.itemSize, this.gl.FLOAT, false, 0, 0);
@@ -246,6 +249,9 @@
                     this.gl.drawElements(this.gl.TRIANGLES, this.geometry[i].IndexBufferShadow.numItems, this.gl.UNSIGNED_SHORT, 0);
                     this.geometry[i].mvMatrix = tempMVMatrix;
                 } else if (this.geometry[i].Type == 'Cube') {
+                    if (this.geometry[i].Shadow == false) {
+                        continue;
+                    }
                     this.geometry[i].VertexBufferShadow = this.geometry[i].VertexBuffer;
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBufferShadow);
                     this.gl.vertexAttribPointer(this.ShadowProgram.Position, 3, this.gl.FLOAT, false, 0, 0);
@@ -392,7 +398,8 @@
             this.IndexBufferShadow,
             this.mvMatrix = mat4.create(),
             this.indexInGeometry,
-            this.position;
+            this.position,
+            this.Shadow = false;
         mat4.identity(this.mvMatrix);
 
     }
@@ -419,6 +426,9 @@
         getPositionY: function () {
             return this.mvMatrix[13];
         },
+        castShadow: function(bool){
+            return (this.Shadow = bool);
+        }
     }
 
     function Plane() {
