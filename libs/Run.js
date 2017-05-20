@@ -21,7 +21,7 @@ function webGLStart() {
     Test.addProgramShader();
 
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
-    Camera.translate(0.0, 1.0, -3);
+    Camera.translate(0.0, 1.0, -4);
     Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
     Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
     Test.add(Camera);
