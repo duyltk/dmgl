@@ -19,8 +19,9 @@
     font-weight: normal;
     font-style: normal;
 }
+
 html,
-body{
+body {
     padding: 0;
     margin: 0;
     overflow: hidden;
@@ -166,11 +167,11 @@ body{
     font-family: 'BebasNeueRegular', arial, sans-serif;
     text-transform: uppercase;
     color: #2d96ce;
-    -webkit-touch-callout:none;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #menu div {
@@ -233,11 +234,11 @@ span {
     font-size: 1.8em;
     padding: 25px 15px;
     margin: 10px 10px;
-    -webkit-touch-callout:none;
-    -webkit-user-select:none;
-    -moz-user-select:none;
-    -ms-user-select:none;
-    user-select:none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
 #f-info h3 {
@@ -245,7 +246,6 @@ span {
     color: #43434a;
     margin: 0px;
     padding: 10px 10px;
-
 }
 
 #f-info b {
@@ -266,4 +266,22 @@ span {
     color: #555;
     font-size: 1.4em;
     text-transform: uppercase;
+}
+
+h4 {
+    color: #555;
+    font-size: 1.8em;
+    text-transform: uppercase;
+    font-family: SFUIDisplay-Black;
+    
+    bottom: 15%;
+    overflow-y: auto;
+    text-align: center;
+    padding: 20PX 150px;
+    margin: 0px 10px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }

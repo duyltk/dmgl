@@ -40,5 +40,16 @@
         $('f-info').style.display = 'none';
         return;
     }
+    $('start').onclick = function () {
+        $('step-1').style.display = 'none';
+        $('step-2').innerHTML = '<img src="image/help-kb.png"><h4>Click anywhere to continue.....</h4>';
+        $('step-2').style.display = 'block';
+        return;
+    }
+    $('step-2').onclick = function () {
+        $('step-2').style.display = 'none';
+        webGLStart();
+        return;
+    }
 
 }).call(this);

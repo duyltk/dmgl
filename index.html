@@ -6,26 +6,22 @@
     <meta charset="utf-8">
     <link rel="icon" href="image/favicon.png" type="image/png">
     <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8">
+
 </head>
 
 <body>
     <div id="step-1">
         <div id="background"></div>
-
         <div id="menu">
             <div id="start">Start</div>
-            <div id="s-ball"> Texture Ball :
-                WORLDCUP FOOTBALL
+            <div id="s-ball"> Texture Ball : WORLDCUP FOOTBALL
             </div>
-            <div id="s-cube">Texture cube :
-                Wood
+            <div id="s-cube">Texture cube : Wood
             </div>
-            <div id="s-plane">Texture plane :
-                Football filed
+            <div id="s-plane">Texture plane : Football filed
             </div>
-            <div id="s-controls">Controls :
-                Keyboard
-            </div>    
+            <div id="s-controls">Controls : Keyboard
+            </div>
             <div id="info">information</div>
         </div>
     </div>
@@ -34,19 +30,26 @@
         <h3>GAME: ROLLING A BALL</h3>
         <span></span>
         <p><b>Concept and Development:</b></p>
-		<p id="name-info">Le Trinh Khanh Duy - 15520159<br>
-        Thai Quang Minh - 15520494<br>
-            DMCore.JS
+        <p id="name-info">Le Trinh Khanh Duy - 15520159<br> Thai Quang Minh - 15520494<br> DMCore.JS
         </p>
-        <p><b>Technologies</b><p></p>
-        <p id="name-info"> WebGL<br>
-            JavaScript<br>
-            Detect Motion
-        </p>
-        <h4>Click anywhere to continue.....</h4>
+        <p><b>Technologies</b>
+            <p></p>
+            <p id="name-info"> WebGL<br> JavaScript
+                <br> Detect Motion
+            </p>
+            <h4>Click anywhere to continue.....</h4>
     </div>
-                
+
+    <div id="step-2" style="display: none"></div>
+    <div id="step-3" style="display: none"></div>
+
+    <canvas id="mycanvas"></canvas>
+
     <script src="libs/launch.js"></script>
+    <script src="libs/glMatrix-0.9.5.min.js"></script>
+    <script src="libs/DMCore.js"></script>
+    <script src="libs/Run.js"></script>
+
 </body>
 
 </html>

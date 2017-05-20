@@ -10,7 +10,9 @@
         canvas.height = window.innerHeight;
 
         try {
-            this.gl = canvas.getContext('experimental-webgl', {antialias: true});
+            this.gl = canvas.getContext('experimental-webgl', {
+                antialias: true
+            });
             this.gl.viewportWidth = canvas.width;
             this.gl.viewportHeight = canvas.height;
         } catch (e) {}
@@ -28,41 +30,43 @@
         addProgramShader: function () {
             this.ShadowProgram = this.gl.createProgram();
 
-            var shadow_vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
-            var shadow_fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+            var _vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+            var _fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
 
-            this.gl.shaderSource(shadow_vertexShader, [
+            this.gl.shaderSource(_vertexShader, [
 				'attribute vec3 aVertexPosition;\n' +
                 'uniform mat4 uPMatrix;\n' +
+                'uniform mat4 uVMatrix;\n' +
                 'uniform mat4 uMVMatrix;\n' +
-                
-                'void main(void){\n' +
-                '   gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\n'+
-                '}'].join('\n'));
-            
-            this.gl.shaderSource(shadow_fragmentShader, [
-				'precision mediump float; \n' +
-                
-                'void main(void){\n' +
-                '  gl_FragColor = vec4(gl_FragCoord.z, 0.0, 0.0, 1.0);\n'+
-                '}'].join('\n'));
-            
-            this.gl.compileShader(shadow_vertexShader);
-            this.gl.compileShader(shadow_fragmentShader);
 
-            this.gl.attachShader(this.ShadowProgram, shadow_vertexShader);
-            this.gl.attachShader(this.ShadowProgram, shadow_fragmentShader);
+                'void main(void){\n' +
+                '    gl_Position = uPMatrix * uVMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\n' +
 
-            this.gl.linkProgram(this.ShadowProgram);  
-            
+                '}'].join('\n'));
+
+            this.gl.shaderSource(_fragmentShader, [
+                'precision mediump float;\n' +
+                'void main(void){\n' +
+                '  const vec4 bitShift = vec4(1.0, 256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0);\n' +
+                '  const vec4 bitMask = vec4(1.0/256.0, 1.0/256.0, 1.0/256.0, 0.0);\n' +
+                '  vec4 rgbaDepth = fract(gl_FragCoord.z * bitShift);\n' + // Calculate the value stored into each byte
+                '  rgbaDepth -= rgbaDepth.gbaa * bitMask;\n' +
+                '  gl_FragColor = vec4(0.0, 0.0, 0.0, 0.9);\n' +
+                '}'].join('\n'));
+
+            this.gl.compileShader(_vertexShader);
+            this.gl.compileShader(_fragmentShader);
+
+            this.gl.attachShader(this.ShadowProgram, _vertexShader);
+            this.gl.attachShader(this.ShadowProgram, _fragmentShader);
+
+            this.gl.linkProgram(this.ShadowProgram);
+
+            this.ShadowProgram.Position = this.gl.getAttribLocation(this.ShadowProgram, "aVertexPosition");
+
             this.ShadowProgram.pMatrix = this.gl.getUniformLocation(this.ShadowProgram, "uPMatrix");
+            this.ShadowProgram.vMatrix = this.gl.getUniformLocation(this.ShadowProgram, "uVMatrix");
             this.ShadowProgram.mvMatrix = this.gl.getUniformLocation(this.ShadowProgram, "uMVMatrix");
-            
-            this.ShadowProgram.Position = this.gl.getAttribLocation(this.ShadowProgram, "aVertexPosition");          
-            
-            this.PROJMATRIX_SHADOW = mat4.create();
-            this.PROJMATRIX_SHADOW = mat4.perspective(70, this.viewportWidth / this.viewportHeight, 0.1, 1000);
-            this.PROJMATRIX_SHADOW = mat4.lookAt(0, 0, 2, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0);
             //-----------------------------
             this.Program = this.gl.createProgram();
 
@@ -77,20 +81,20 @@
                 'uniform mat4 uVMatrix;\n' +
                 'uniform mat4 uMVMatrix;\n' +
                 'uniform mat3 uNMatrix;\n' +
-                
+
                 'uniform vec3 uAmbientColor;\n' +
-                
+
                 'uniform vec3 uLightingPosition;\n' +
                 'uniform vec3 uDirectionalColor;\n' +
-                
+
                 'varying vec2 vFragTexCoord;\n' +
                 'varying vec3 vLightWeighting;\n' +
                 'void main(void){\n' +
                 '    gl_Position = uPMatrix * uVMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\n' +
                 '    vFragTexCoord = aVertexTexCoord;\n' +
                 '    vec3 transformedNormal = uNMatrix * aVertexNormal;\n' +
-                '    vec4 vertexPosition = uMVMatrix * vec4(aVertexPosition, 1.0);\n'+
-                '    vec3 LightingDirection = normalize(uLightingPosition - vec3(vertexPosition));\n'+
+                '    vec4 vertexPosition = uMVMatrix * vec4(aVertexPosition, 1.0);\n' +
+                '    vec3 LightingDirection = normalize(uLightingPosition - vec3(vertexPosition));\n' +
                 '    float nDotL = max(dot(transformedNormal, LightingDirection), 0.0);\n' +
                 '    vLightWeighting = uAmbientColor + uDirectionalColor * nDotL;\n' +
                 '}'].join('\n'));
@@ -112,15 +116,12 @@
             this.gl.attachShader(this.Program, fragmentShader);
 
             this.gl.linkProgram(this.Program);
-            //this.gl.useProgram(this.Program);
-            
+
             this.Program.Position = this.gl.getAttribLocation(this.Program, "aVertexPosition");
-//            this.gl.enableVertexAttribArray(this.Program.Position);
+
             this.Program.textureCoord = this.gl.getAttribLocation(this.Program, "aVertexTexCoord");
-//            this.gl.enableVertexAttribArray(this.Program.textureCoord);
             this.Program.normalCoord = this.gl.getAttribLocation(this.Program, "aVertexNormal");
-//            this.gl.enableVertexAttribArray(this.Program.normalCoord);
-            
+
             this.Program.pMatrix = this.gl.getUniformLocation(this.Program, "uPMatrix");
             this.Program.vMatrix = this.gl.getUniformLocation(this.Program, "uVMatrix");
             this.Program.mvMatrix = this.gl.getUniformLocation(this.Program, "uMVMatrix");
@@ -129,42 +130,14 @@
             this.Program.lightColor = this.gl.getUniformLocation(this.Program, "uDirectionalColor");
             this.Program.ambientColor = this.gl.getUniformLocation(this.Program, "uAmbientColor");
             this.Program.sampler = this.gl.getUniformLocation(this.Program, 'usampler');
-            
-            
-            
-            
-            this.fb=this.gl.createFramebuffer();
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb);
-
-            this.rb=this.gl.createRenderbuffer();
-            this.gl.bindRenderbuffer(this.gl.RENDERBUFFER, this.rb);
-            this.gl.renderbufferStorage(this.gl.RENDERBUFFER, this.gl.DEPTH_COMPONENT16 , 512, 512);
-
-            this.gl.framebufferRenderbuffer(this.gl.FRAMEBUFFER, this.gl.DEPTH_ATTACHMENT,
-                                     this.gl.RENDERBUFFER, this.rb);
-
-            this.texture_rtt=this.gl.createTexture();
-            this.gl.bindTexture(this.gl.TEXTURE_2D, this.texture_rtt);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-            this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
-            this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 2048, 2048,
-                        0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, null);
-
-            this.gl.framebufferTexture2D(this.gl.FRAMEBUFFER, this.gl.COLOR_ATTACHMENT0,
-                                  this.gl.TEXTURE_2D, this.texture_rtt, 0);
-
-
-            this.gl.bindTexture(this.gl.TEXTURE_2D, null);
-            this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
 
         },
 
         add: function (object) {
-            if (object.Type == 'PerspectiveCamera'){
+            if (object.Type == 'PerspectiveCamera') {
                 this.pMatrix = object.pMatrix;
                 this.vMatrix = object.vMatrix;
-            }
-            else {
+            } else {
                 if (object.Type == 'Plane') {
                     object.VertexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.VertexBuffer);
@@ -173,10 +146,10 @@
                     object.TextureBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.TextureBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.TextureCoord), this.gl.STATIC_DRAW);
-                    
+
                     object.NormalBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.NormalBuffer);
-                    this.gl.bufferData(this.gl.ARRAY_BUFFER, new  Float32Array(object.Normal), this.gl.STATIC_DRAW);
+                    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Normal), this.gl.STATIC_DRAW);
 
                 } else if (object.Type == 'Cube') {
                     object.VertexBuffer = this.gl.createBuffer();
@@ -186,11 +159,11 @@
                     object.TextureBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.TextureBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.TextureCoord), this.gl.STATIC_DRAW);
-                    
+
                     object.NormalBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.NormalBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Normal), this.gl.STATIC_DRAW);
-                    
+
                     object.IndexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object.IndexBuffer);
                     this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(object.Index), this.gl.STATIC_DRAW);
@@ -200,19 +173,19 @@
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.TextureCoord), this.gl.STATIC_DRAW);
                     object.TextureBuffer.itemSize = 2;
                     object.TextureBuffer.numItems = object.TextureCoord.length / 2;
-                    
+
                     object.VertexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.VertexBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Vertices), this.gl.STATIC_DRAW);
                     object.VertexBuffer.itemSize = 3;
                     object.VertexBuffer.numItems = object.Vertices.length / 3;
-                    
+
                     object.NormalBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.NormalBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Normal), this.gl.STATIC_DRAW);
                     object.NormalBuffer.itemSize = 3;
                     object.NormalBuffer.numItems = object.Normal.length / 3;
-                    
+
                     object.IndexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object.IndexBuffer);
                     this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(object.Index), this.gl.STATIC_DRAW);
@@ -220,85 +193,77 @@
                     object.IndexBuffer.numItems = object.Index.length;
                 }
 
-                object.Texture = this.gl.createTexture();
-                object.Texture.image = new Image();
-                object.Texture.image.src = object.imageTexture;
-                _gl = this.gl;
-                object.Texture.image.onload = function () {
-                    _gl.bindTexture(_gl.TEXTURE_2D, object.Texture);
-                    _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _gl.RGBA, _gl.UNSIGNED_BYTE, object.Texture.image);
-                    
-                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
-                    _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
-                    
-                    var width1 = object.Texture.image.width & (object.Texture.image.width - 1);
-                    var height1 = object.Texture.image.height & (object.Texture.image.height - 1);
-                    if (width1 == 0 && height1 == 0){
-                        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR_MIPMAP_NEAREST);
-                         _gl.generateMipmap(_gl.TEXTURE_2D);
-                    }else{
-                        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
-                    }               
-                    _gl.bindTexture(_gl.TEXTURE_2D, null);
-                };
+                if (object.imageTexture != undefined) {
+                    object.Texture = this.gl.createTexture();
+                    object.Texture.image = new Image();
+                    object.Texture.image.src = object.imageTexture;
+                    _gl = this.gl;
+                    object.Texture.image.onload = function () {
+                        _gl.bindTexture(_gl.TEXTURE_2D, object.Texture);
+                        _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, _gl.RGBA, _gl.UNSIGNED_BYTE, object.Texture.image);
+
+                        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_S, _gl.CLAMP_TO_EDGE);
+                        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_WRAP_T, _gl.CLAMP_TO_EDGE);
+
+                        var width1 = object.Texture.image.width & (object.Texture.image.width - 1);
+                        var height1 = object.Texture.image.height & (object.Texture.image.height - 1);
+                        if (width1 == 0 && height1 == 0) {
+                            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR_MIPMAP_NEAREST);
+                            _gl.generateMipmap(_gl.TEXTURE_2D);
+                        } else {
+                            _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.LINEAR);
+                        }
+                        _gl.bindTexture(_gl.TEXTURE_2D, null);
+                    };
+                }
                 this.geometry.push(object);
                 object.indexInGeometry = this.geometry.length - 1;
             }
         },
         renderWebGL: function () {
-//                this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.fb);
-//                this.gl.useProgram(this.ShadowProgram);
-//
-//            this.gl.viewport(0, 0, 1024, 1024); // Set view port for FBO
-//            this.gl.clearColor(1.0, 0.0, 0.0, 1.0); //red -> Z=Zfar on the shadow map
-//            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
-//
-//            this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.PROJMATRIX_SHADOW);
-//                        this.gl.enableVertexAttribArray(this.ShadowProgram.Position);   
-//
-//
-//            
-//             for (var i = 0; i < this.geometry.length; i++){
-//                 if (this.geometry[i] === undefined){
-//                    continue;  
-//                }
-//                this.gl.uniformMatrix4fv(this.ShadowProgram.mvMatrix, false, this.geometry[i].mvMatrix); 
-//                if (this.geometry[i].Type == 'pPlane') {
-//
-//                    
-//                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
-//                    this.gl.vertexAttribPointer(this.ShadowProgram.Position, 3, this.gl.FLOAT, false, 0, 0);
-//
-//                    
-//                    this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, 4);
-//                }
-//                else if(this.geometry[i].Type == 'Sphere'){
-//                
-//                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
-//                    this.gl.vertexAttribPointer(this.ShadowProgram.Position, this.geometry[i].VertexBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
-//                    
-//
-//                    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBuffer);
-//                    this.gl.drawElements(this.gl.TRIANGLES, this.geometry[i].IndexBuffer.numItems, this.gl.UNSIGNED_SHORT, 0);
-//                }
-//                else if(this.geometry[i].Type == 'Cube'){
-//                    
-//                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
-//                    this.gl.vertexAttribPointer(this.ShadowProgram.Position, 3, this.gl.FLOAT, false, 0, 0);
-//                    
-//                    
-//                    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBuffer);
-//
-//                    this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
-//                 
-//             }
-//        }
-//    
-//
-//            this.gl.disableVertexAttribArray(this.ShadowProgram.Position);
-//              this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-//            this.gl.viewport(0, 0, this.viewportWidth, this.viewportHeight);
-//            this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+            this.gl.useProgram(this.ShadowProgram);
+            this.gl.enableVertexAttribArray(this.ShadowProgram.Position);
+
+            for (var i = 0; i < this.geometry.length; i++) {
+                if (this.geometry[i] === undefined) {
+                    continue;
+                }
+                var temp = mat4.create();
+                mat4.set(this.geometry[i].mvMatrix, temp);
+                if (this.geometry[i].Type == 'Sphere') {
+                    this.geometry[i].VertexBufferShadow = this.geometry[i].VertexBuffer;
+                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBufferShadow);
+                    this.gl.vertexAttribPointer(this.ShadowProgram.Position, this.geometry[i].VertexBufferShadow.itemSize, this.gl.FLOAT, false, 0, 0);
+                    this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
+                    this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
+
+                    var tempMVMatrix = this.geometry[i].mvMatrix;
+                    this.geometry[i].translate(0.025, 0, -2);
+                    this.geometry[i].scale(1, 1, 0.023);
+                    this.gl.uniformMatrix4fv(this.ShadowProgram.mvMatrix, false, this.geometry[i].mvMatrix);
+                    this.geometry[i].IndexBufferShadow = this.geometry[i].IndexBuffer;
+                    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBuffer);
+                    this.gl.drawElements(this.gl.TRIANGLES, this.geometry[i].IndexBufferShadow.numItems, this.gl.UNSIGNED_SHORT, 0);
+                    this.geometry[i].mvMatrix = tempMVMatrix;
+                } else if (this.geometry[i].Type == 'Cube') {
+                    this.geometry[i].VertexBufferShadow = this.geometry[i].VertexBuffer;
+                    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBufferShadow);
+                    this.gl.vertexAttribPointer(this.ShadowProgram.Position, 3, this.gl.FLOAT, false, 0, 0);
+
+                    var tempMVMatrix = this.geometry[i].mvMatrix;
+                    this.geometry[i].translate(0.025, 0, -2.5);
+                    this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
+                    this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
+                    this.gl.uniformMatrix4fv(this.ShadowProgram.mvMatrix, false, this.geometry[i].mvMatrix);
+                    this.geometry[i].IndexBufferShadow = this.geometry[i].IndexBuffer;
+                    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBufferShadow);
+
+                    this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
+                    this.geometry[i].mvMatrix = tempMVMatrix;
+                }
+                mat4.set(temp, this.geometry[i].mvMatrix);
+            }
+
             this.gl.useProgram(this.Program);
             this.gl.enableVertexAttribArray(this.Program.Position);
             this.gl.enableVertexAttribArray(this.Program.normalCoord);
@@ -307,26 +272,24 @@
             this.gl.uniform3fv(this.Program.lightColor, [0.2, 0.2, 0.2]);
             this.gl.uniform3fv(this.Program.ambientColor, [0.6, 0.6, 0.6]);
             for (var i = 0; i < this.geometry.length; i++) {
-                if (this.geometry[i] === undefined){
-                    continue;  
+                if (this.geometry[i] === undefined) {
+                    continue;
                 }
                 var temp = mat4.create();
                 mat4.set(this.geometry[i].mvMatrix, temp);
                 if (this.geometry[i].Type == 'Plane') {
-                    
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
                     this.gl.vertexAttribPointer(this.Program.Position, 3, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].NormalBuffer);
                     this.gl.vertexAttribPointer(this.Program.normalCoord, 3, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].TextureBuffer);
                     this.gl.vertexAttribPointer(this.Program.textureCoord, 2, this.gl.FLOAT, false, 0, 0);
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.activeTexture(this.gl.TEXTURE0);
                     this.gl.uniform1i(this.Program.sampler, 0);
-                    
                     this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
                     this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
@@ -334,27 +297,21 @@
                     mat4.toInverseMat3(this.geometry[i].mvMatrix, normalMatrix);
                     mat3.transpose(normalMatrix);
                     this.gl.uniformMatrix3fv(this.Program.nMatrix, false, normalMatrix);
-                    
-                    
+
                     this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, 4);
-                }
-                else if(this.geometry[i].Type == 'Sphere'){
-                    
-                    
-                    
-                    
+                } else if (this.geometry[i].Type == 'Sphere') {
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
                     this.gl.vertexAttribPointer(this.Program.Position, this.geometry[i].VertexBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].NormalBuffer);
                     this.gl.vertexAttribPointer(this.Program.normalCoord, this.geometry[i].NormalBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].TextureBuffer);
                     this.gl.vertexAttribPointer(this.Program.textureCoord, this.geometry[i].TextureBuffer.itemSize, this.gl.FLOAT, false, 0, 0);
                     this.gl.activeTexture(this.gl.TEXTURE0);
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.uniform1i(this.Program.sampler, 0);
-                    
                     this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
                     this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
@@ -362,27 +319,22 @@
                     mat4.toInverseMat3(this.geometry[i].mvMatrix, normalMatrix);
                     mat3.transpose(normalMatrix);
                     this.gl.uniformMatrix3fv(this.Program.nMatrix, false, normalMatrix);
-                    
-                    
-
                     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBuffer);
                     this.gl.drawElements(this.gl.TRIANGLES, this.geometry[i].IndexBuffer.numItems, this.gl.UNSIGNED_SHORT, 0);
-                }
-                else if(this.geometry[i].Type == 'Cube'){
-                    
+                } else if (this.geometry[i].Type == 'Cube') {
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
                     this.gl.vertexAttribPointer(this.Program.Position, 3, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].NormalBuffer);
                     this.gl.vertexAttribPointer(this.Program.normalCoord, 3, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].TextureBuffer);
                     this.gl.vertexAttribPointer(this.Program.textureCoord, 2, this.gl.FLOAT, false, 0, 0);
-                    
+
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.activeTexture(this.gl.TEXTURE0);
                     this.gl.uniform1i(this.Program.sampler, 0);
-                    
                     this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
                     this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
@@ -390,10 +342,6 @@
                     mat4.toInverseMat3(this.geometry[i].mvMatrix, normalMatrix);
                     mat3.transpose(normalMatrix);
                     this.gl.uniformMatrix3fv(this.Program.nMatrix, false, normalMatrix);
-                    
-                    
-                    
-                    
                     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBuffer);
 
                     this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
@@ -414,7 +362,7 @@
         mat4.perspective(fov, aspect, near, far, this.pMatrix);
         mat4.lookAt([0, 0, 9], [0, 0, 0], [0, 1, 0], this.vMatrix);
     }
-    
+
     PerspectiveCamera.prototype = {
         constructor: PerspectiveCamera,
         translate: function (x, y, z) {
@@ -423,7 +371,7 @@
         rotate: function (a, b, c, d) {
             mat4.rotate(this.pMatrix, a, [b, c, d]);
         },
-        lookat: function (ex, ey, ez, x, y, z, ax, ay, az){
+        lookat: function (ex, ey, ez, x, y, z, ax, ay, az) {
             mat4.lookAt([ex, ey, ez], [x, y, z], [ax, ay, az], this.vMatrix);
         }
     }
@@ -437,14 +385,15 @@
             this.imageTexture,
             this.Texture,
             this.VertexBuffer,
+            this.VertexBufferShadow,
             this.TextureBuffer,
             this.NormalBuffer,
             this.IndexBuffer,
-            
+            this.IndexBufferShadow,
             this.mvMatrix = mat4.create(),
             this.indexInGeometry,
             this.position;
-            mat4.identity(this.mvMatrix);
+        mat4.identity(this.mvMatrix);
 
     }
     Object3D.prototype = {
@@ -464,10 +413,10 @@
         addTexture: function (img_src) {
             this.imageTexture = img_src;
         },
-        getPositionX: function (){
+        getPositionX: function () {
             return this.mvMatrix[12];
         },
-        getPositionY: function() {
+        getPositionY: function () {
             return this.mvMatrix[13];
         },
     }
@@ -663,6 +612,69 @@
         }
     }
     Sphere.prototype = Object.create(Object3D.prototype);
+
+    function initFramebufferObject(_gl) {
+        var OFFSCREEN_WIDTH = _gl.viewportWidth,
+            OFFSCREEN_HEIGHT = _gl.viewportHeight;
+
+        var framebuffer, texture, depthBuffer;
+
+        // Define the error handling function
+        var error = function () {
+            if (framebuffer) _gl.deleteFramebuffer(framebuffer);
+            if (texture) _gl.deleteTexture(texture);
+            if (depthBuffer) _gl.deleteRenderbuffer(depthBuffer);
+            return null;
+        }
+
+        // Create a framebuffer object (FBO)
+        framebuffer = _gl.createFramebuffer();
+        if (!framebuffer) {
+            console.log('Failed to create frame buffer object');
+            return error();
+        }
+
+        // Create a texture object and set its size and parameters
+        texture = _gl.createTexture(); // Create a texture object
+        if (!texture) {
+            console.log('Failed to create texture object');
+            return error();
+        }
+        _gl.bindTexture(_gl.TEXTURE_2D, texture);
+        _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, null);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.NEAREST);
+        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
+
+        // Create a renderbuffer object and Set its size and parameters
+        depthBuffer = _gl.createRenderbuffer(); // Create a renderbuffer object
+        if (!depthBuffer) {
+            console.log('Failed to create renderbuffer object');
+            return error();
+        }
+        _gl.bindRenderbuffer(_gl.RENDERBUFFER, depthBuffer);
+        _gl.renderbufferStorage(_gl.RENDERBUFFER, _gl.DEPTH_COMPONENT16, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT);
+
+        // Attach the texture and the renderbuffer object to the FBO
+        _gl.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
+        _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, texture, 0);
+        _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.DEPTH_ATTACHMENT, _gl.RENDERBUFFER, depthBuffer);
+
+        // Check if FBO is configured correctly
+        var e = _gl.checkFramebufferStatus(_gl.FRAMEBUFFER);
+        if (_gl.FRAMEBUFFER_COMPLETE !== e) {
+            console.log('Frame buffer object is incomplete: ' + e.toString());
+            return error();
+        }
+
+        framebuffer.texture = texture; // keep the required object
+
+        // Unbind the buffer object
+        _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
+        _gl.bindTexture(_gl.TEXTURE_2D, null);
+        _gl.bindRenderbuffer(_gl.RENDERBUFFER, null);
+
+        return framebuffer;
+    }
 
     exports.Scene = Scene;
     exports.PerspectiveCamera = PerspectiveCamera;
