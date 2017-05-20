@@ -138,18 +138,18 @@ function check() {
     }
 
 }
-function draw2D(ctx){
-            ctx.clearRect(0, 0, 400, 400);
-            ctx.font = ' 500 20px Arial';
-            
-            ctx.fillStyle = 'rgba(180, 100, 223, 1)';
-            ctx.fillText("Your Score: ", 40, 50);
-            ctx.fillText(score, 150, 50);
-            if (score ==  Cube.length * 10){
-                ctx.font = ' 50px Courier New';
-                ctx.fillText("YOU WIN", window.innerWidth/2 - 110, window.innerHeight/2);
-            }
-        }
+function draw2D(ctx) {
+    ctx.clearRect(0, 0, 400, 400);
+    ctx.font = ' 500 40px SFUIDisplay-Regular';
+    ctx.fillStyle = '#fff';
+    ctx.fillText("Your Score: ", 40, 75);
+    ctx.fillText(score, 250, 75);
+    if (score == Cube.length * 10) {
+        ctx.font = ' 60px SFUIDisplay-Regular';
+        ctx.fillText("YOU WIN", window.innerWidth / 2 - 110, window.innerHeight / 4);
+    }
+
+}
 function loop() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
