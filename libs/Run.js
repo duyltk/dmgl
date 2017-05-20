@@ -6,6 +6,10 @@ var gl = [],
     Space,
     Camera;
 
+var Hud;
+var ctx;
+var score = 0;
+
 var pMatrix = mat4.create();
 var mvMatrix = mat4.create();
 mat4.identity(mvMatrix);
@@ -19,7 +23,12 @@ var Cube2 = [];
 function webGLStart() {
     Test = new DMCore.Scene('mycanvas');
     Test.addProgramShader();
-
+    
+    Hud = document.getElementById('hud');
+    ctx = Hud.getContext('2d');
+    Hud.height = window.innerHeight;
+    Hud.width = window.innerWidth;    
+    
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
     Camera.translate(0.0, 1.0, -3);
     Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
@@ -112,22 +121,40 @@ var i = 0;
 function check() {
     x = Sphere.getPositionX();
     y = Sphere.getPositionY();
-    for (var i = 0; i < n; i++) {
-        if (x >= xCube[i] - 0.14 && x <= xCube[i] + 0.14 && y >= yCube[i] - 0.14 && y <= yCube[i] + 0.14) {
-            delete Test.geometry[Cube[i].indexInGeometry];
-        }
+    for (var i = 0; i < Cube.length; i++) {
         Cube[i].rotate(Math.PI / 320, 0, 0, 1);
+        if (x >= xCube[i] - 0.14 && x <= xCube[i] + 0.14 && y >= yCube[i] - 0.14 && y <= yCube[i] + 0.14) {
+            
+            delete Test.geometry[Cube[i].indexInGeometry];
+            score += 10;
+            xCube.splice(i, 1);
+            yCube.splice(i, 1);
+            Cube.splice(i, 1);
+        }
+        
     }
 
 }
-
+function draw2D(ctx){
+            ctx.clearRect(0, 0, 400, 400);
+            ctx.font = ' 500 20px Arial';
+            
+            ctx.fillStyle = 'rgba(180, 100, 223, 1)';
+            ctx.fillText("Your Score: ", 40, 50);
+            ctx.fillText(score, 150, 50);
+            if (Cube.length == 0){
+                ctx.font = ' 50px Courier New';
+                ctx.fillText("YOU WIN", window.innerWidth/2 - 110, window.innerHeight/2);
+            }
+        }
 function loop() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
-
+    check();
     Test.renderWebGL();
     handleKeys();
-    check();
+    
+    draw2D(ctx);
     requestAnimationFrame(loop);
 }
