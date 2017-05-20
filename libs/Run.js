@@ -6,6 +6,11 @@ var gl = [],
     Space,
     Camera;
 
+var imgPathTex = [];
+//[0]: Sphere, [1]:Cube, [2]:Plane
+var defineSPHERE = 0,
+    defineCUBE = 1,
+    definePLANE = 2;
 var Hud;
 var ctx;
 var score = 0;
@@ -36,12 +41,12 @@ function webGLStart() {
     Test.add(Camera);
 
     Plane = new DMCore.Plane();
-    Plane.addTexture('image/plane/field.jpg');
+    Plane.addTexture(imgPathTex[definePLANE]);
     Plane.scale(2.4, 1.2, 1.2);
     Test.add(Plane);
 
     Sphere = new DMCore.Sphere();
-    Sphere.addTexture('image/ball/Football.jpg');
+    Sphere.addTexture(imgPathTex[defineSPHERE]);
     Sphere.scale(0.043, 0.043, 0.043);
     Sphere.translate(0, 0, 2);
     Sphere.castShadow(true);
@@ -61,7 +66,7 @@ function webGLStart() {
         xCube[i] = Math.sin(theta) * 1;
         yCube[i] = Math.cos(theta) * 1;
         Cube[i] = new DMCore.Cube();
-        Cube[i].addTexture('image/cube/cube.gif');
+        Cube[i].addTexture(imgPathTex[defineCUBE]);
         Cube[i].translate(xCube[i], yCube[i], 0.1);
         Cube[i].scale(0.06, 0.06, 0.06);
         Cube[i].castShadow(true);
