@@ -17,7 +17,7 @@
             this.gl.viewportHeight = canvas.height;
         } catch (e) {}
         if (!this.gl) {
-            alert("your Browser does not support webgl")
+            alert("Your Browser does not support webgl");
         }
         this.gl.viewport(0, 0, this.gl.viewportWidth, this.gl.viewportHeight);
         this.pMatrix = mat4.create();
@@ -277,12 +277,12 @@
             this.gl.uniform3fv(this.Program.lightPosition, [0, 0, 2]);
             this.gl.uniform3fv(this.Program.lightColor, [0.2, 0.2, 0.2]);
             this.gl.uniform3fv(this.Program.ambientColor, [0.8, 0.8, 0.8]);
+            this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
+            this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
             for (var i = 0; i < this.geometry.length; i++) {
                 if (this.geometry[i] === undefined) {
                     continue;
                 }
-                var temp = mat4.create();
-                mat4.set(this.geometry[i].mvMatrix, temp);
                 if (this.geometry[i].Type == 'Plane') {
 
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBuffer);
@@ -296,8 +296,7 @@
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.activeTexture(this.gl.TEXTURE0);
                     this.gl.uniform1i(this.Program.sampler, 0);
-                    this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
-                    this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
+                    
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
                     var normalMatrix = mat3.create();
                     mat4.toInverseMat3(this.geometry[i].mvMatrix, normalMatrix);
@@ -318,8 +317,6 @@
                     this.gl.activeTexture(this.gl.TEXTURE0);
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.uniform1i(this.Program.sampler, 0);
-                    this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
-                    this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
                     var normalMatrix = mat3.create();
                     mat4.toInverseMat3(this.geometry[i].mvMatrix, normalMatrix);
@@ -341,8 +338,6 @@
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.activeTexture(this.gl.TEXTURE0);
                     this.gl.uniform1i(this.Program.sampler, 0);
-                    this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
-                    this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
                     var normalMatrix = mat3.create();
                     mat4.toInverseMat3(this.geometry[i].mvMatrix, normalMatrix);
@@ -352,7 +347,7 @@
 
                     this.gl.drawElements(this.gl.TRIANGLES, 36, this.gl.UNSIGNED_SHORT, 0);
                 }
-                mat4.set(temp, this.geometry[i].mvMatrix);
+                
             }
         }
     }
@@ -366,19 +361,21 @@
         this.near = near !== undefined ? near : 0.1;
         this.far = far !== undefined ? far : 2000;
         mat4.perspective(fov, aspect, near, far, this.pMatrix);
-        mat4.lookAt([0, 0, 9], [0, 0, 0], [0, 1, 0], this.vMatrix);
+        
     }
 
     PerspectiveCamera.prototype = {
         constructor: PerspectiveCamera,
         translate: function (x, y, z) {
             mat4.translate(this.pMatrix, [x, y, z]);
+            
         },
         rotate: function (a, b, c, d) {
             mat4.rotate(this.pMatrix, a, [b, c, d]);
+            
         },
         lookat: function (ex, ey, ez, x, y, z, ax, ay, az) {
-            mat4.lookAt([ex, ey, ez], [x, y, z], [ax, ay, az], this.vMatrix);
+            mat4.lookAt([ex, ey, ez], [x, y, z], [ax, ay, az], this.vMatrix );
         }
     }
 
@@ -401,6 +398,7 @@
             this.position,
             this.Shadow = false;
         mat4.identity(this.mvMatrix);
+            
 
     }
     Object3D.prototype = {
@@ -408,14 +406,21 @@
         getVertices: function () {
             return this.Vertices;
         },
+       
         rotate: function (a, b, c, d) {
+            
             mat4.rotate(this.mvMatrix, a, [b, c, d]);
+            
         },
         scale: function (x, y, z) {
+            
             mat4.scale(this.mvMatrix, [x, y, z]);
+            
         },
         translate: function (x, y, z) {
+            
             mat4.translate(this.mvMatrix, [x, y, z]);
+            
         },
         addTexture: function (img_src) {
             this.imageTexture = img_src;
@@ -623,68 +628,7 @@
     }
     Sphere.prototype = Object.create(Object3D.prototype);
 
-    function initFramebufferObject(_gl) {
-        var OFFSCREEN_WIDTH = _gl.viewportWidth,
-            OFFSCREEN_HEIGHT = _gl.viewportHeight;
-
-        var framebuffer, texture, depthBuffer;
-
-        // Define the error handling function
-        var error = function () {
-            if (framebuffer) _gl.deleteFramebuffer(framebuffer);
-            if (texture) _gl.deleteTexture(texture);
-            if (depthBuffer) _gl.deleteRenderbuffer(depthBuffer);
-            return null;
-        }
-
-        // Create a framebuffer object (FBO)
-        framebuffer = _gl.createFramebuffer();
-        if (!framebuffer) {
-            console.log('Failed to create frame buffer object');
-            return error();
-        }
-
-        // Create a texture object and set its size and parameters
-        texture = _gl.createTexture(); // Create a texture object
-        if (!texture) {
-            console.log('Failed to create texture object');
-            return error();
-        }
-        _gl.bindTexture(_gl.TEXTURE_2D, texture);
-        _gl.texImage2D(_gl.TEXTURE_2D, 0, _gl.RGBA, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT, 0, _gl.RGBA, _gl.UNSIGNED_BYTE, null);
-        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MIN_FILTER, _gl.NEAREST);
-        _gl.texParameteri(_gl.TEXTURE_2D, _gl.TEXTURE_MAG_FILTER, _gl.NEAREST);
-
-        // Create a renderbuffer object and Set its size and parameters
-        depthBuffer = _gl.createRenderbuffer(); // Create a renderbuffer object
-        if (!depthBuffer) {
-            console.log('Failed to create renderbuffer object');
-            return error();
-        }
-        _gl.bindRenderbuffer(_gl.RENDERBUFFER, depthBuffer);
-        _gl.renderbufferStorage(_gl.RENDERBUFFER, _gl.DEPTH_COMPONENT16, OFFSCREEN_WIDTH, OFFSCREEN_HEIGHT);
-
-        // Attach the texture and the renderbuffer object to the FBO
-        _gl.bindFramebuffer(_gl.FRAMEBUFFER, framebuffer);
-        _gl.framebufferTexture2D(_gl.FRAMEBUFFER, _gl.COLOR_ATTACHMENT0, _gl.TEXTURE_2D, texture, 0);
-        _gl.framebufferRenderbuffer(_gl.FRAMEBUFFER, _gl.DEPTH_ATTACHMENT, _gl.RENDERBUFFER, depthBuffer);
-
-        // Check if FBO is configured correctly
-        var e = _gl.checkFramebufferStatus(_gl.FRAMEBUFFER);
-        if (_gl.FRAMEBUFFER_COMPLETE !== e) {
-            console.log('Frame buffer object is incomplete: ' + e.toString());
-            return error();
-        }
-
-        framebuffer.texture = texture; // keep the required object
-
-        // Unbind the buffer object
-        _gl.bindFramebuffer(_gl.FRAMEBUFFER, null);
-        _gl.bindTexture(_gl.TEXTURE_2D, null);
-        _gl.bindRenderbuffer(_gl.RENDERBUFFER, null);
-
-        return framebuffer;
-    }
+    
 
     exports.Scene = Scene;
     exports.PerspectiveCamera = PerspectiveCamera;

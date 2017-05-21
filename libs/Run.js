@@ -1,3 +1,7 @@
+$ = function (id) {
+    return document.getElementById(id);
+};
+
 var gl = [],
     Test,
     Plane,
@@ -6,8 +10,12 @@ var gl = [],
     Space,
     Camera;
 
-var Hud;
-var ctx;
+var imgPathTex = [];
+//[0]: Sphere, [1]:Cube, [2]:Plane
+var defineSPHERE = 0,
+    defineCUBE = 1,
+    definePLANE = 2;
+
 var score = 0;
 
 var pMatrix = mat4.create();
@@ -18,30 +26,24 @@ var xCube = [];
 var yCube = [];
 
 var Cube = [];
-var Cube2 = [];
 
 function webGLStart() {
     Test = new DMCore.Scene('mycanvas');
     Test.addProgramShader();
-    
-    Hud = document.getElementById('hud');
-    ctx = Hud.getContext('2d');
-    Hud.height = window.innerHeight;
-    Hud.width = window.innerWidth;    
-    
+
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
-    Camera.translate(0.0, 1.0, -4);
-    Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
-    Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
+    //Camera.translate(0.0, 0.0, -7.0);
+    //Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
+    //Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
     Test.add(Camera);
 
     Plane = new DMCore.Plane();
-    Plane.addTexture('image/plane/field.jpg');
+    Plane.addTexture(imgPathTex[definePLANE]);
     Plane.scale(2.4, 1.2, 1.2);
     Test.add(Plane);
 
     Sphere = new DMCore.Sphere();
-    Sphere.addTexture('image/ball/Football.jpg');
+    Sphere.addTexture(imgPathTex[defineSPHERE]);
     Sphere.scale(0.043, 0.043, 0.043);
     Sphere.translate(0, 0, 2);
     Sphere.castShadow(true);
@@ -54,14 +56,14 @@ function webGLStart() {
     Test.add(Space);
 
 
-    var latitudeBands = 6;
+    latitudeBands = 6;
     var i = 0;
     for (var latNumber = 0; latNumber < latitudeBands * 2; latNumber++) {
         var theta = latNumber * Math.PI / latitudeBands;
         xCube[i] = Math.sin(theta) * 1;
         yCube[i] = Math.cos(theta) * 1;
         Cube[i] = new DMCore.Cube();
-        Cube[i].addTexture('image/cube/cube.gif');
+        Cube[i].addTexture(imgPathTex[defineCUBE]);
         Cube[i].translate(xCube[i], yCube[i], 0.1);
         Cube[i].scale(0.06, 0.06, 0.06);
         Cube[i].castShadow(true);
@@ -122,37 +124,50 @@ function check() {
     x = Sphere.getPositionX();
     y = Sphere.getPositionY();
     for (var i = 0; i < Cube.length; i++) {
-        Cube[i].rotate(Math.PI / 320, 0, 0, 1);
+        Cube[i].rotate(degToRad(angle), 0, 0, 1);
         if (x >= xCube[i] - 0.14 && x <= xCube[i] + 0.14 && y >= yCube[i] - 0.14 && y <= yCube[i] + 0.14) {
-            
-            if(Test.geometry[Cube[i].indexInGeometry] != undefined){
+            if (Test.geometry[Cube[i].indexInGeometry] != undefined) {
                 delete Test.geometry[Cube[i].indexInGeometry];
                 score += 10;
+                $('score').innerHTML = 'Your score: ' + score;
+                if(score == latitudeBands * 20){
+                    $('win').style.display = 'block';
+                    $('goHome').style.display = 'block';
+                }
             }
+            
         }
+        
     }
 
 }
-function draw2D(ctx){
-            ctx.clearRect(0, 0, 400, 400);
-            ctx.font = ' 500 20px Arial';
-            
-            ctx.fillStyle = 'rgba(180, 100, 223, 1)';
-            ctx.fillText("Your Score: ", 40, 50);
-            ctx.fillText(score, 150, 50);
-            if (Cube.length == 0){
-                ctx.font = ' 50px Courier New';
-                ctx.fillText("YOU WIN", window.innerWidth/2 - 110, window.innerHeight/2);
-            }
-        }
+var lastTime = 0;
+var angle = 0;
+function degToRad(x){
+    return x * Math.PI / 180;
+}
+function animate() {
+    var timeNow = new Date().getTime();
+    if (lastTime != 0) {
+      var elapsed = timeNow - lastTime;
+      angle = (90 * elapsed) / 1000.0;
+    }
+    lastTime = timeNow;
+}
 function loop() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
     check();
+    animate();
+    
     Test.renderWebGL();
     handleKeys();
-    Camera.lookat(0, 0, 1, x, y, 0, 0, 1, 1);
-    draw2D(ctx);
+//<<<<<<< HEAD
+    Camera.lookat(0, 0, 3, x, y, 0, 0, 1, 0);
+//    draw2D(ctx);
+//=======
+
+//>>>>>>> cf0e61f0241a23da801f5f634429d4b9ccfcfc2b
     requestAnimationFrame(loop);
 }

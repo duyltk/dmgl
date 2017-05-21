@@ -5,9 +5,9 @@
         return document.getElementById(id);
     };
 
-    select = ['ball', 'cube', 'plane', 'controls'];
+    select = ['sphere', 'cube', 'plane', 'controls'];
 
-    info_select = [[1, 'WORLDCUP FOOTBALL', 'EARTH'], [1, 'WOOD', 'BACKGROUND DMCore'], [1, 'Football Field', 'WOOD'], [1, 'KEYBOARD', 'LEAP MOTION']]
+    info_select = [[1, 'WORLDCUP FOOTBALL 1', 'WORLDCUP FOOTBALL 2', 'BASKETBALL', 'TENNIS', 'BEACH BALL'], [1, 'WOOD', 'BLUE BLACK', 'SKY BLUE', 'WOOD LIGHT', 'PINK BLACK'], [1, 'Football Field', 'Dark Grunge', 'Christmas Wood', 'Gold bokeh', 'flash network'], [1, 'KEYBOARD', 'LEAP MOTION']]
 
     f_select = function (i) {
         var e;
@@ -43,12 +43,20 @@
     $('start').onclick = function () {
         $('step-1').style.display = 'none';
         $('step-2').innerHTML = '<img src="image/help-kb.png"><h4>Click anywhere to continue.....</h4>';
+        for (i = 0; i < select.length - 1; i++){
+            imgPathTex[i] = 'image/' + select[i] + '/' + select[i] + '-' + info_select[i][0] + '.gif';
+        }
         $('step-2').style.display = 'block';
         return;
     }
     $('step-2').onclick = function () {
         $('step-2').style.display = 'none';
+        $('score').style.display = 'block';
         webGLStart();
+        return;
+    }
+    $('goHome').onclick = function () {
+        location.reload(true);
         return;
     }
 
