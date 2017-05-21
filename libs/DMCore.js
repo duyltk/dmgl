@@ -257,8 +257,9 @@
                     this.gl.vertexAttribPointer(this.ShadowProgram.Position, 3, this.gl.FLOAT, false, 0, 0);
 
                     var tempMVMatrix = this.geometry[i].mvMatrix;
-                    this.geometry[i].translate(0.025, 0, -2.5);
-                    this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
+                    this.geometry[i].translate(0.025, 0, -1.6);
+					this.geometry[i].scale(1, 1, 0.023);                    
+					this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
                     this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
                     this.gl.uniformMatrix4fv(this.ShadowProgram.mvMatrix, false, this.geometry[i].mvMatrix);
                     this.geometry[i].IndexBufferShadow = this.geometry[i].IndexBuffer;

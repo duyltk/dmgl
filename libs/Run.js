@@ -32,8 +32,8 @@ function webGLStart() {
     Test.addProgramShader();
 
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
-    //Camera.translate(0.0, 0.0, -7.0);
-    //Camera.rotate((-1 / 3) * Math.PI, 1, 0, 0);
+    Camera.translate(0.0, 0, 5);
+    //Camera.rotate((-1 / 4) * Math.PI, 1, 0, 0);
     //Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
     Test.add(Camera);
 
@@ -135,11 +135,8 @@ function check() {
                     $('goHome').style.display = 'block';
                 }
             }
-            
         }
-        
     }
-
 }
 var lastTime = 0;
 var angle = 0;
@@ -163,11 +160,7 @@ function loop() {
     
     Test.renderWebGL();
     handleKeys();
-//<<<<<<< HEAD
-    Camera.lookat(0, 0, 3, x, y, 0, 0, 1, 0);
-//    draw2D(ctx);
-//=======
+    Camera.lookat(0, -6, 6, x, y, 0, 0, 1, 0);
 
-//>>>>>>> cf0e61f0241a23da801f5f634429d4b9ccfcfc2b
     requestAnimationFrame(loop);
 }
