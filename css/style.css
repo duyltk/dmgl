@@ -211,6 +211,10 @@ body {
     -webkit-transform: scaleY(1.1);
     transform: scaleY(1.1);
 }
+#step-2 {
+    text-align: center;
+
+}
 
 span {
     width: 150px;
@@ -327,7 +331,7 @@ h4 {
 }
 
 #win, #goHome {
-   position: absolute;
+	position: absolute;
     top: auto;
     right: 0;
     bottom: 50%;

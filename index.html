@@ -6,7 +6,6 @@
     <meta charset="utf-8">
     <link rel="icon" href="image/favicon.png" type="image/png">
     <link rel="stylesheet" href="css/style.css" type="text/css" charset="utf-8">
-
 </head>
 
 <body>
@@ -44,13 +43,25 @@
     <div id="step-3" style="display: none"></div>
 
     <canvas id="mycanvas" style="position : absolute; z-index: 0"></canvas>
+
     <div id="score" style="display: none">Your score: 0</div>
     <div id="win" style="display: none">You win</div>
-    <div id="goHome"style="display: none">< Go home ></div>
-    <script src="libs/launch.js"></script>
+    <div id="goHome" style="display: none">
+        < Go home>
+    </div>
+
+    <video id="camera" autoplay style="display: none; width: 320px; height: 240px;"></video>
+    <div id="canvasLayers" width="320" height="240" style="display: none; position: absolute; left: 0px; top: 0px;">
+        <canvas id="videoCanvas" width="320" height="240" style="z-index: 1; position: absolute; left:0px; top:0px;"></canvas>
+        <canvas id="layer2" width="320" height="240" style="z-index: 2; position: absolute; left:0px; top:0px; opacity:0.5;"></canvas>
+    </div>
+    <canvas id="blendCanvas" style="display: none; position: absolute; left: 320px; top: 240px; width: 320px; height: 240px;"></canvas>
+
+    <script src="DMCore/Launch.js"></script>
     <script src="libs/glMatrix-0.9.5.min.js"></script>
-    <script src="libs/DMCore.js"></script>
-    <script src="libs/Run.js"></script>
+    <script src="DMCore/DMCore.js"></script>
+    <script src="DMCore/Run.js"></script>
+    <script src="DMCore/LeapMotion.js"></script>
 
 </body>
 

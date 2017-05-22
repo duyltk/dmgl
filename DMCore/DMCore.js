@@ -275,7 +275,7 @@
             this.gl.enableVertexAttribArray(this.Program.Position);
             this.gl.enableVertexAttribArray(this.Program.normalCoord);
             this.gl.enableVertexAttribArray(this.Program.textureCoord);
-            this.gl.uniform3fv(this.Program.lightPosition, [0, 0, 2]);
+            this.gl.uniform3fv(this.Program.lightPosition, [0, 0, 6]);
             this.gl.uniform3fv(this.Program.lightColor, [0.2, 0.2, 0.2]);
             this.gl.uniform3fv(this.Program.ambientColor, [0.8, 0.8, 0.8]);
             this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);

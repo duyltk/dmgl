@@ -12,9 +12,16 @@ var gl = [],
 
 var imgPathTex = [];
 //[0]: Sphere, [1]:Cube, [2]:Plane
+
+var getControl;
+//1=KEYBOARD, 2=LEAPMOTION
+var control_leapmotion;
+//1= LEFT, 2= UP, 3 = RIGHT, 4=DOWM
+
 var defineSPHERE = 0,
     defineCUBE = 1,
-    definePLANE = 2;
+    definePLANE = 2,
+    defineCONTROL = 3;
 
 var score = 0;
 
@@ -91,9 +98,43 @@ var x = 0,
     y = 0;
 var giatoc = 0;
 
+function leapMotion() {
+    if(control_leapmotion == 0) return;
+    if (control_leapmotion == 1 ) {
+        
+		// left key
+        if (Sphere.getPositionX() > -2) {
+            Sphere.translate(-0.1, 0, 0);
+    
+        }
+    }
+    if (control_leapmotion == 2) {
+        // up key
+        if (Sphere.getPositionY() < 1) {
+            Sphere.translate(0, 0.1, 0);
+
+        }
+
+    }
+    if (control_leapmotion == 3) {
+        // right key
+        if (Sphere.getPositionX() < 2) {
+            Sphere.translate(0.1, 0, 0);
+        }
+    }
+    if (control_leapmotion == 4) {
+        // down key
+        if (Sphere.getPositionY() > -1) {
+            Sphere.translate(0, -0.1, 0);
+
+        }
+    }
+    
+
+}
 function handleKeys() {
-    if (currentlyPressedKeys[37]) {
-        // left key
+    if (currentlyPressedKeys[37] ) {
+		// left key
         if (Sphere.getPositionX() > -2) {
             Sphere.translate(-0.2, 0, 0);
         }
@@ -109,7 +150,6 @@ function handleKeys() {
         if (Sphere.getPositionX() < 2) {
             Sphere.translate(0.2, 0, 0);
         }
-
     }
     if (currentlyPressedKeys[40]) {
         // down key
@@ -117,6 +157,7 @@ function handleKeys() {
             Sphere.translate(0, -0.2, 0);
         }
     }
+
 }
 var i = 0;
 
@@ -151,6 +192,7 @@ function animate() {
     }
     lastTime = timeNow;
 }
+
 function loop() {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -159,7 +201,12 @@ function loop() {
     animate();
     
     Test.renderWebGL();
-    handleKeys();
+    if (getControl == 1)
+        handleKeys();
+    else {        
+
+        leapMotion();
+    }
     Camera.lookat(0, -6, 6, x, y, 0, 0, 1, 0);
 
     requestAnimationFrame(loop);
