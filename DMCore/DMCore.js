@@ -138,6 +138,17 @@
                 this.pMatrix = object.pMatrix;
                 this.vMatrix = object.vMatrix;
             } else {
+                if (object.Type == 'Light'){
+                    this.xLight = object.x;
+                    this.yLight = object.y;
+                    this.zLight = object.z;
+                    this.rColor = object.rColor;
+                    this.gColor = object.gColor;
+                    this.bColor = object.bColor;
+                    this.rAmb = object.rAmb;
+                    this.gAmb = object.gAmb;
+                    this.bAmb = object.bAmb;
+                }else{
                 if (object.Type == 'Plane') {
                     object.VertexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.VertexBuffer);
@@ -219,6 +230,7 @@
                 this.geometry.push(object);
                 object.indexInGeometry = this.geometry.length - 1;
             }
+            }
         },
         renderWebGL: function () {
             this.gl.useProgram(this.ShadowProgram);
@@ -230,6 +242,8 @@
                 }
                 var temp = mat4.create();
                 mat4.set(this.geometry[i].mvMatrix, temp);
+                this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
+                this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
                 if (this.geometry[i].Type == 'Sphere') {
                     if (this.geometry[i].Shadow == false) {
                         continue;
@@ -237,8 +251,7 @@
                     this.geometry[i].VertexBufferShadow = this.geometry[i].VertexBuffer;
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.geometry[i].VertexBufferShadow);
                     this.gl.vertexAttribPointer(this.ShadowProgram.Position, this.geometry[i].VertexBufferShadow.itemSize, this.gl.FLOAT, false, 0, 0);
-                    this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
-                    this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
+                    
 
                     var tempMVMatrix = this.geometry[i].mvMatrix;
                     this.geometry[i].translate(0.025, 0, -2);
@@ -259,8 +272,7 @@
                     var tempMVMatrix = this.geometry[i].mvMatrix;
                     this.geometry[i].translate(0.025, 0, -1.6);
 					this.geometry[i].scale(1, 1, 0.023);                    
-					this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
-                    this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
+					
                     this.gl.uniformMatrix4fv(this.ShadowProgram.mvMatrix, false, this.geometry[i].mvMatrix);
                     this.geometry[i].IndexBufferShadow = this.geometry[i].IndexBuffer;
                     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this.geometry[i].IndexBufferShadow);
@@ -275,9 +287,9 @@
             this.gl.enableVertexAttribArray(this.Program.Position);
             this.gl.enableVertexAttribArray(this.Program.normalCoord);
             this.gl.enableVertexAttribArray(this.Program.textureCoord);
-            this.gl.uniform3fv(this.Program.lightPosition, [0, 0, 6]);
-            this.gl.uniform3fv(this.Program.lightColor, [0.2, 0.2, 0.2]);
-            this.gl.uniform3fv(this.Program.ambientColor, [0.8, 0.8, 0.8]);
+            this.gl.uniform3fv(this.Program.lightPosition, [this.xLight, this.yLight, this.zLight]);
+            this.gl.uniform3fv(this.Program.lightColor, [this.rColor, this.gColor, this.bColor]);
+            this.gl.uniform3fv(this.Program.ambientColor, [this.rAmb, this.gAmb, this.bAmb]);
             this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
             this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
             for (var i = 0; i < this.geometry.length; i++) {
@@ -352,6 +364,23 @@
             }
         }
     }
+    //----
+    function Light(x, y, z, rColor, gColor, bColor, rAmb, gAmb, bAmb){
+        this.Type = 'Light';
+        this.x = x !== undefined ? x : 0;
+        this.y = y !== undefined ? y : 0;
+        this.z = z !== undefined ? z : 0;
+        this.rColor = rColor !== undefined ? rColor : 0.2;
+        this.gColor = gColor !== undefined ? gColor : 0.2;
+        this.bColor = bColor !== undefined ? bColor : 0.2;
+        this.rAmb = rAmb !== undefined ? rAmb : 0.5;
+        this.gAmb = gAmb !== undefined ? gAmb : 0.5;
+        this.bAmb = bAmb !== undefined ? bAmb : 0.5;
+    }
+    Light.prototype = {
+        constructor: Light,
+    }
+    //---
 
     function PerspectiveCamera(fov, aspect, near, far) {
         this.pMatrix = mat4.create();
@@ -633,6 +662,7 @@
 
     exports.Scene = Scene;
     exports.PerspectiveCamera = PerspectiveCamera;
+    exports.Light = Light;
     exports.Object3D = Object3D;
     exports.Plane = Plane;
     exports.Cube = Cube;

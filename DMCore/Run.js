@@ -8,7 +8,8 @@ var gl = [],
     Cube,
     Sphere,
     Space,
-    Camera;
+    Camera,
+    Light;
 
 var imgPathTex = [];
 //[0]: Sphere, [1]:Cube, [2]:Plane
@@ -44,6 +45,9 @@ function webGLStart() {
     //Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
     Test.add(Camera);
 
+    Light = new DMCore.Light(0, 0, 6, 0.2, 0.2, 0.2, 0.8, 0.8, 0.8);
+    Test.add(Light);
+    
     Plane = new DMCore.Plane();
     Plane.addTexture(imgPathTex[definePLANE]);
     Plane.scale(2.4, 1.2, 1.2);
