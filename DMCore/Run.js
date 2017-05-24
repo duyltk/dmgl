@@ -36,16 +36,18 @@ var yCube = [];
 var Cube = [];
 
 function webGLStart() {
+    //create Sence so that we can contain : Camera, Light, Object,...
     Test = new DMCore.Scene('mycanvas');
     Test.addProgramShader();
 
     Camera = new DMCore.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000.0);
     Camera.translate(0.0, 0, 5);
-    //Camera.rotate((-1 / 4) * Math.PI, 1, 0, 0);
-    //Camera.lookat(0, 0, 1, 0, 0, 0, 0, 1, 0);
     Test.add(Camera);
 
-    Light = new DMCore.Light(0, 0, 6, 0.2, 0.2, 0.2, 0.8, 0.8, 0.8);
+    Light = new DMCore.Light();
+    Light.position(0, 0, 10);
+    Light.color(0.2, 0.2, 0.2);
+    Light.ambient(0.8, 0.8, 0.8);
     Test.add(Light);
     
     Plane = new DMCore.Plane();
@@ -66,7 +68,7 @@ function webGLStart() {
     Space.translate(0, 0, 0);
     Test.add(Space);
 
-
+    //calculate coordinate of each cube so that we can draw these cubes.
     latitudeBands = 6;
     var i = 0;
     for (var latNumber = 0; latNumber < latitudeBands * 2; latNumber++) {
@@ -81,13 +83,13 @@ function webGLStart() {
         Test.add(Cube[i]);
         i++;
     }
-    n = i;
-
+    
     document.onkeydown = handleKeyDown;
     document.onkeyup = handleKeyUp;
     gl = Test.gl;
     loop();
 }
+//Handle Controler
 var currentlyPressedKeys = {};
 
 function handleKeyDown(event) {
@@ -100,7 +102,7 @@ function handleKeyUp(event) {
 
 var x = 0,
     y = 0;
-var giatoc = 0;
+
 
 function leapMotion() {
     if(control_leapmotion == 0) return;
@@ -163,8 +165,9 @@ function handleKeys() {
     }
 
 }
-var i = 0;
 
+
+var i = 0;
 function check() {
     x = Sphere.getPositionX();
     y = Sphere.getPositionY();
@@ -183,6 +186,7 @@ function check() {
         }
     }
 }
+///Calculate angle that is used to rotate object
 var lastTime = 0;
 var angle = 0;
 function degToRad(x){
@@ -192,7 +196,7 @@ function animate() {
     var timeNow = new Date().getTime();
     if (lastTime != 0) {
       var elapsed = timeNow - lastTime;
-      angle = (90 * elapsed) / 1000.0;
+      angle = (30 * elapsed) / 1000.0;
     }
     lastTime = timeNow;
 }
@@ -203,7 +207,6 @@ function loop() {
     gl.enable(gl.DEPTH_TEST);
     check();
     animate();
-    
     Test.renderWebGL();
     if (getControl == 1)
         handleKeys();
@@ -212,6 +215,5 @@ function loop() {
         leapMotion();
     }
     Camera.lookat(0, -6, 6, x, y, 0, 0, 1, 0);
-
     requestAnimationFrame(loop);
 }

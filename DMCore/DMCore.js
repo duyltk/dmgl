@@ -28,11 +28,12 @@
     Scene.prototype = {
         constructor: Scene,
         addProgramShader: function () {
+            //CREATE SHADOW PROGRAM WHICH DRAW SHADOW MAPPING
             this.ShadowProgram = this.gl.createProgram();
 
             var _vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
             var _fragmentShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-
+            
             this.gl.shaderSource(_vertexShader, [
 				'attribute vec3 aVertexPosition;\n' +
                 'uniform mat4 uPMatrix;\n' +
@@ -67,7 +68,7 @@
             this.ShadowProgram.pMatrix = this.gl.getUniformLocation(this.ShadowProgram, "uPMatrix");
             this.ShadowProgram.vMatrix = this.gl.getUniformLocation(this.ShadowProgram, "uVMatrix");
             this.ShadowProgram.mvMatrix = this.gl.getUniformLocation(this.ShadowProgram, "uMVMatrix");
-            //-----------------------------
+            //CREATE PROGRAM WHICH DRAW SCENE, OBJECT,...
             this.Program = this.gl.createProgram();
 
             var vertexShader = this.gl.createShader(this.gl.VERTEX_SHADER);
@@ -83,26 +84,35 @@
                 'uniform mat3 uNMatrix;\n' +
 
                 'uniform vec3 uAmbientColor;\n' +
-
                 'uniform vec3 uLightingPosition;\n' +
+                'uniform vec3 uViewPosition;\n' +
                 'uniform vec3 uDirectionalColor;\n' +
+                'uniform float uShininess;' +
 
                 'varying vec2 vFragTexCoord;\n' +
                 'varying vec3 vLightWeighting;\n' +
+                
                 'void main(void){\n' +
                 '    gl_Position = uPMatrix * uVMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);\n' +
                 '    vFragTexCoord = aVertexTexCoord;\n' +
                 '    vec3 transformedNormal = uNMatrix * aVertexNormal;\n' +
-                '    vec4 vertexPosition = uMVMatrix * vec4(aVertexPosition, 1.0);\n' +
+                '    vec4 vertexPosition = uPMatrix * uVMatrix  * uMVMatrix * vec4(aVertexPosition, 1.0);\n' +
                 '    vec3 LightingDirection = normalize(uLightingPosition - vec3(vertexPosition));\n' +
+                '    vec3 ViewDirection = normalize(uViewPosition - vec3(vertexPosition));\n' +
+                '    vec3 HalfVector = normalize(LightingDirection + ViewDirection);\n' +
                 '    float nDotL = max(dot(transformedNormal, LightingDirection), 0.0);\n' +
-                '    vLightWeighting = uAmbientColor + uDirectionalColor * nDotL;\n' +
+                '    float specular = 0.0;' +
+                '    if (nDotL > 0.0){\n' +
+                '       specular = pow(max(dot(transformedNormal, HalfVector), 0.0), uShininess);\n' +
+                '    }\n' +
+                '    vLightWeighting = specular + uAmbientColor + uDirectionalColor * nDotL;\n' +
                 '}'].join('\n'));
 
             this.gl.shaderSource(fragmentShader, [
                 'precision mediump float;\n' +
                 'varying vec2 vFragTexCoord;\n' +
                 'varying vec3 vLightWeighting;\n' +
+                
                 'uniform sampler2D, usampler;\n' +
                 'void main(void){\n' +
                 '    vec4 textureColor = texture2D(usampler, vFragTexCoord);\n' +
@@ -116,7 +126,7 @@
             this.gl.attachShader(this.Program, fragmentShader);
 
             this.gl.linkProgram(this.Program);
-
+            
             this.Program.Position = this.gl.getAttribLocation(this.Program, "aVertexPosition");
 
             this.Program.textureCoord = this.gl.getAttribLocation(this.Program, "aVertexTexCoord");
@@ -127,6 +137,8 @@
             this.Program.mvMatrix = this.gl.getUniformLocation(this.Program, "uMVMatrix");
             this.Program.nMatrix = this.gl.getUniformLocation(this.Program, "uNMatrix");
             this.Program.lightPosition = this.gl.getUniformLocation(this.Program, "uLightingPosition");
+            this.Program.viewPosition = this.gl.getUniformLocation(this.Program, "uViewPosition");
+            this.Program.shininess = this.gl.getUniformLocation(this.Program, "uShininess");
             this.Program.lightColor = this.gl.getUniformLocation(this.Program, "uDirectionalColor");
             this.Program.ambientColor = this.gl.getUniformLocation(this.Program, "uAmbientColor");
             this.Program.sampler = this.gl.getUniformLocation(this.Program, 'usampler');
@@ -134,10 +146,12 @@
         },
 
         add: function (object) {
+                // information about Camera
             if (object.Type == 'PerspectiveCamera') {
                 this.pMatrix = object.pMatrix;
                 this.vMatrix = object.vMatrix;
             } else {
+                // information about light
                 if (object.Type == 'Light'){
                     this.xLight = object.x;
                     this.yLight = object.y;
@@ -149,7 +163,9 @@
                     this.gAmb = object.gAmb;
                     this.bAmb = object.bAmb;
                 }else{
-                if (object.Type == 'Plane') {
+                    //Add object in geometry array which contain: buffer object(vertex, texture coordinate, normal, index) and texture object.                    
+                if (object.Type == 'Plane') { 
+                    // Plane Object
                     object.VertexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.VertexBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Vertices), this.gl.STATIC_DRAW);
@@ -162,7 +178,8 @@
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.NormalBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Normal), this.gl.STATIC_DRAW);
 
-                } else if (object.Type == 'Cube') {
+                } else if (object.Type == 'Cube') { 
+                    // Cube Object
                     object.VertexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.VertexBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.Vertices), this.gl.STATIC_DRAW);
@@ -178,7 +195,8 @@
                     object.IndexBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, object.IndexBuffer);
                     this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(object.Index), this.gl.STATIC_DRAW);
-                } else {
+                } else { 
+                    //Spere Object
                     object.TextureBuffer = this.gl.createBuffer();
                     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, object.TextureBuffer);
                     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(object.TextureCoord), this.gl.STATIC_DRAW);
@@ -203,7 +221,7 @@
                     object.IndexBuffer.itemSize = 1;
                     object.IndexBuffer.numItems = object.Index.length;
                 }
-
+//-------------------------------CREATE TEXTURE for OBJECT-----------------------------------------
                 if (object.imageTexture != undefined) {
                     object.Texture = this.gl.createTexture();
                     object.Texture.image = new Image();
@@ -232,18 +250,22 @@
             }
             }
         },
+//-----------------------------------------------RENDER---------------------------------------------------
         renderWebGL: function () {
+            //-------------------------------------DRAW SHADOW MAPPING-----------------------------------
             this.gl.useProgram(this.ShadowProgram);
             this.gl.enableVertexAttribArray(this.ShadowProgram.Position);
-
+            //SET CAMERA AND VIEW
+            this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
+            this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
+            //Draw shadow mapping
             for (var i = 0; i < this.geometry.length; i++) {
                 if (this.geometry[i] === undefined) {
                     continue;
                 }
                 var temp = mat4.create();
                 mat4.set(this.geometry[i].mvMatrix, temp);
-                this.gl.uniformMatrix4fv(this.ShadowProgram.pMatrix, false, this.pMatrix);
-                this.gl.uniformMatrix4fv(this.ShadowProgram.vMatrix, false, this.vMatrix);
+                
                 if (this.geometry[i].Type == 'Sphere') {
                     if (this.geometry[i].Shadow == false) {
                         continue;
@@ -282,16 +304,21 @@
                 }
                 mat4.set(temp, this.geometry[i].mvMatrix);
             }
-
+            //--------------------------------------------DRAW OBJECT-------------------------------------
             this.gl.useProgram(this.Program);
             this.gl.enableVertexAttribArray(this.Program.Position);
             this.gl.enableVertexAttribArray(this.Program.normalCoord);
             this.gl.enableVertexAttribArray(this.Program.textureCoord);
+            //Set light position, color, ambient color, shininess.
             this.gl.uniform3fv(this.Program.lightPosition, [this.xLight, this.yLight, this.zLight]);
+            this.gl.uniform3fv(this.Program.viewPosition, [this.vMatrix[12], this.vMatrix[13], this.vMatrix[14]]);
             this.gl.uniform3fv(this.Program.lightColor, [this.rColor, this.gColor, this.bColor]);
+            this.gl.uniform1f(this.Program.shininess, 0.3);
             this.gl.uniform3fv(this.Program.ambientColor, [this.rAmb, this.gAmb, this.bAmb]);
+            //set camera and view
             this.gl.uniformMatrix4fv(this.Program.pMatrix, false, this.pMatrix);
             this.gl.uniformMatrix4fv(this.Program.vMatrix, false, this.vMatrix);
+            // draw
             for (var i = 0; i < this.geometry.length; i++) {
                 if (this.geometry[i] === undefined) {
                     continue;
@@ -308,7 +335,7 @@
                     this.gl.vertexAttribPointer(this.Program.textureCoord, 2, this.gl.FLOAT, false, 0, 0);
                     this.gl.bindTexture(this.gl.TEXTURE_2D, this.geometry[i].Texture);
                     this.gl.activeTexture(this.gl.TEXTURE0);
-                    this.gl.uniform1i(this.Program.sampler, 0);
+                    this.gl.uniform1i(this.Program.sampler, 0.2);
                     
                     this.gl.uniformMatrix4fv(this.Program.mvMatrix, false, this.geometry[i].mvMatrix);
                     var normalMatrix = mat3.create();
@@ -364,7 +391,7 @@
             }
         }
     }
-    //----
+    //---------------------------------------LIGHT OBJECT--------------------------------------------
     function Light(x, y, z, rColor, gColor, bColor, rAmb, gAmb, bAmb){
         this.Type = 'Light';
         this.x = x !== undefined ? x : 0;
@@ -379,9 +406,24 @@
     }
     Light.prototype = {
         constructor: Light,
+        position: function(x, y, z){
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        },
+        color: function(red, green, blue){
+            this.rColor = red;
+            this.gColor = green;
+            this.bColor = blue;
+        },
+        ambient: function(red, green, blue){
+            this.rAmb = red;
+            this.gAmb = green;
+            this.bAmb = blue;
+        }
     }
     //---
-
+    //--------------------PERSPECTIVE CAMERA OBJECT---------------------------------------
     function PerspectiveCamera(fov, aspect, near, far) {
         this.pMatrix = mat4.create();
         this.vMatrix = mat4.create();
@@ -408,7 +450,7 @@
             mat4.lookAt([ex, ey, ez], [x, y, z], [ax, ay, az], this.vMatrix );
         }
     }
-
+//    --------------------OBJECT 3D------------------------------------------------------------
     function Object3D() {
         this.Type,
             this.Vertices = [],
@@ -465,7 +507,7 @@
             return (this.Shadow = bool);
         }
     }
-
+//----------------------------PLANE OBJECT --------------------------------------------------------
     function Plane() {
         Object3D.call(this);
         this.Type = 'Plane';
@@ -489,7 +531,7 @@
         ];
     }
     Plane.prototype = Object.create(Object3D.prototype);
-
+//---------------------------------CUBE OBJECT-------------------------------------------------------
     function Cube() {
         Object3D.call(this);
         this.Type = 'Cube';
@@ -609,7 +651,7 @@
         ]
     }
     Cube.prototype = Object.create(Object3D.prototype);
-
+//------------------------------------SPHERE OBJECT----------------------------------------------
     function Sphere() {
         Object3D.call(this);
         this.Type = 'Sphere';
