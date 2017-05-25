@@ -1,7 +1,11 @@
 $ = function (id) {
     return document.getElementById(id);
 };
-
+var defineSPHERE = 0,
+    defineCUBE = 1,
+    definePLANE = 2,
+    defineCONTROL = 3;
+	
 var gl = [],
     Test,
     Plane,
@@ -10,7 +14,8 @@ var gl = [],
     Space,
     Camera,
     Light;
-
+	
+//Path image to load texture
 var imgPathTex = [];
 //[0]: Sphere, [1]:Cube, [2]:Plane
 
@@ -19,11 +24,7 @@ var getControl;
 var control_leapmotion;
 //1= LEFT, 2= UP, 3 = RIGHT, 4=DOWM
 
-var defineSPHERE = 0,
-    defineCUBE = 1,
-    definePLANE = 2,
-    defineCONTROL = 3;
-
+//Score of game
 var score = 0;
 
 var pMatrix = mat4.create();
@@ -103,7 +104,7 @@ function handleKeyUp(event) {
 var x = 0,
     y = 0;
 
-
+//Control of Leapmotion
 function leapMotion() {
     if(control_leapmotion == 0) return;
     if (control_leapmotion == 1 ) {
@@ -135,9 +136,9 @@ function leapMotion() {
 
         }
     }
-    
-
 }
+//Control of keyboard
+
 function handleKeys() {
     if (currentlyPressedKeys[37] ) {
 		// left key
@@ -163,9 +164,7 @@ function handleKeys() {
             Sphere.translate(0, -0.2, 0);
         }
     }
-
 }
-
 
 var i = 0;
 function check() {
