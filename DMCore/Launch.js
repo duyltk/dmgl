@@ -1,3 +1,4 @@
+//* Launch.js use to display elements of game
 (function () {
     var $;
 
